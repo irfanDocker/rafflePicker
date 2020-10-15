@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Raffle Picker</title>
+        
+        
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+        <style>
+            tr.winner td { color: #fff; background-color: #5cb85c;}
+            button.btn {margin-bottom:16px;}
+        </style>
+       
+    </head>
+    <body >
+        <div class="container">
+            <h1>Raffle Picker</h1>
+            <p>Enter names and then press the "Draw Winner" button to draw a winner.</p>
+            <p>Tip:  If using a keyboard, you can hit <kbd>TAB</kbd> after entering a Name to go to the "# Tickets" field.  You can then hit <kbd>ENTER</kbd> to create a new entry.</p>
+            <div ng-controller="RafflePickerController">
+                <table class="table">
+                    <tr>
+                        <th>Name</th>
+                        <th># Tickets</th>
+                    </tr>
+                    <tr ng-repeat="participant in participants">
+                        <td><input class="name-input" ng-model="participant.name" /></td>
+                        <td><input class="ticket-input" ng-model="participant.tickets" ng-keypress="addNewParticipantOnEnter($event)" /></td>
+                    </tr>
+                </table>      
+                <button class="btn btn-default" style="margin-right:12px;" ng-click="addNewParticipant()">Add New Participant</button>
+                <button class="btn btn-primary" style="margin-right:12px;" ng-click="drawWinner()">Draw Winner</button>
+                <button class="btn btn-danger" ng-click="reset()">Reset</button>
+                <h2 ng-if="winner">The winner is: {{winner.name}}</h2>
+                
+                <table ng-if="printedTickets" class="table table-bordered">
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>Participant</th>
+                    </tr>
+                    <tr ng-repeat="ticket in printedTickets" ng-class="{winner:ticket.ticketNumber === winningTicketNumber}">
+                        <td>{{ticket.ticketNumber}}</td>
+                        <td>{{ticket.name}}</td>
+                    </tr>
+                
+                </table>
+                
+                
+            </div>
+        </div>
+		
+		<hr/>
+		
+		<footer class="bs-docs-footer">
+			<div class="container">
+				<p>Questions?  Comments?  Feature Requests?  Send me an email at <a href="mailto:irfan.tursun@techcirclesolutions.org">irfan.tursun@techcirclesolutions.org</a>
+			</div>
+		</footer>
+    
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+        
+        <script>
+            angular.module("raffle-picker", [])
+            
+            .controller("RafflePickerController", ['$scope', '$timeout', function($scope, $timeout) {
+                
+                $scope.drawWinner = function() {
+                    var entries = [], name, numTix, i, j, maxI, maxJ, winningIndex, ticketNum = 1;
+                    for (i = 0, maxI = $scope.participants.length; i < maxI; i++) {
+                        name = $scope.participants[i].name;
+                        numTix = $scope.participants[i].tickets;
+                        if (!isNaN(numTix)) {
+                            for (j = 0, maxJ = numTix; j < maxJ; j++) {
+                                entries.push({name:name, ticketNumber:ticketNum});
+                                ticketNum++;
+                            }
+                        }
+                    }
+                    
+                    winningIndex = Math.floor(Math.random()*entries.length);
+                    $scope.winner = entries[winningIndex];
+                    $scope.printedTickets = entries;
+                    $scope.winningTicketNumber = winningIndex + 1;
+                    
+                };
+                
+                $scope.addNewParticipantOnEnter = function($event) {
+                    if ($event.keyCode === 13) {
+                        $scope.participants.push({name:"", tickets:""});
+                        $timeout(function() {
+                            var element = angular.element("input.name-input:last").focus();
+                        });
+                    }
+                   
+                };
+                
+                $scope.addNewParticipant = function() {
+                    $scope.participants.push({name:"", tickets:""});
+                };
+               
+                $scope.reset = function() {
+                    $scope.participants = [{name:"", tickets:""}];
+                    $scope.winner = undefined;
+                    $scope.printedTickets = undefined;
+                    $scope.winningTicketNumber = undefined;
+                }
+                
+                $scope.reset();
+                
+            }]);
+            
+            angular.bootstrap(document, ['raffle-picker']);
+        
+        
+        </script>
+		
+		
+        
+    </body>
+
+
+</html>
